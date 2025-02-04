@@ -3,7 +3,7 @@ from psycopg2.extras import DictCursor
 from decimal import Decimal
 from typing import Dict, List, Optional
 from datetime import datetime
-from book_model import Book
+from models import Book
 from core.config import settings
 
 class DatabaseHandler:
