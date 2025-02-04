@@ -167,4 +167,33 @@ class DatabaseHandler:
         except Exception as e:
             raise Exception(f"Failed to process book {book['upc']}: {str(e)}")
         
-    
+    def query_books(self, query: str, params: Optional[tuple] = None) -> List[Dict]:
+        """
+        Query the database for books with proper error handling and parameter binding.
+        Only allows SELECT queries for security.
+        
+        Args:
+            query: The SQL query to execute with optional parameter placeholders (%s)
+            params: Optional tuple of parameters to bind to the query
+            
+        Returns:
+            List[Dict]: A list of book dictionaries where each dictionary contains book data
+            
+        Raises:
+            ValueError: If the query is not a SELECT statement
+            Exception: If there's an error executing the query
+        """
+        # Convert to uppercase for case-insensitive comparison
+        normalized_query = query.strip().upper()
+        
+        # Check if query starts with SELECT
+        if not normalized_query.startswith('SELECT'):
+            raise ValueError("Only SELECT queries are allowed for security reasons")
+            
+        try:
+            self.cur.execute(query, params)
+            results = self.cur.fetchall()
+            return [dict(row) for row in results]
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            raise Exception(f"Database error while querying books: {str(e)}")
