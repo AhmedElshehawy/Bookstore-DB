@@ -9,9 +9,9 @@ logger = setup_logger("bookstore_api")
 app = FastAPI(title="Book Database API", description="API for managing books in a database")
 
 # Include all routes
-app.include_router(upsert_router, prefix="/upsert", tags=["upsert"])
-app.include_router(health_router, prefix="/health", tags=["health"])
-app.include_router(query_router, prefix="/query", tags=["query"])
+app.include_router(upsert_router, tags=["upsert"])
+app.include_router(health_router, tags=["health"])
+app.include_router(query_router, tags=["query"])
 
 # Add Mangum handler for AWS Lambda
 handler = Mangum(app)
