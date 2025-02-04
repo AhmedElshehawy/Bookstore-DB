@@ -38,16 +38,16 @@ class DatabaseHandler:
         if self.conn:
             self.conn.close()
 
-    def book_exists(self, upc: str) -> Optional[dict]:
-        """
-        Checks if a book exists in the database and returns its current data if found.
+    def get_book(self, upc: str) -> Optional[dict]:
+        '''
+        Get a book from the database.
         
         Args:
-            upc: The UPC of the book to check
+            upc: The UPC of the book to get
             
         Returns:
             dict: Book data if found, None otherwise
-        """
+        '''
         try:
             self.cur.execute("""
                 SELECT title, price, rating, description, category, 
@@ -154,7 +154,7 @@ class DatabaseHandler:
         book['image_url'] = str(book['image_url'])
         book['book_url'] = str(book['book_url'])
         try:
-            existing_book = self.book_exists(book.upc)
+            existing_book = self.get_book(book.upc)
             
             if not existing_book:
                 # Book doesn't exist, insert it
@@ -166,3 +166,5 @@ class DatabaseHandler:
             
         except Exception as e:
             raise Exception(f"Failed to process book {book['upc']}: {str(e)}")
+        
+    
