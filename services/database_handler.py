@@ -40,8 +40,10 @@ class DatabaseHandler:
     def close(self):
         """Closes database connection and cursor safely."""
         if self.cur:
+            logger.info("Closing cursor")
             self.cur.close()
         if self.conn:
+            logger.info("Closing connection")
             self.conn.close()
 
     def get_book(self, upc: str) -> Optional[dict]:

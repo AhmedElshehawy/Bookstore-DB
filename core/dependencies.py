@@ -1,15 +1,18 @@
 from services import DatabaseHandler
-import logging
+from core.logger import setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger("dependencies")
 
 async def get_db():
     """
     Get a database connection
     """
+    logger.debug("Creating new database connection")
     db = DatabaseHandler()
     try:
         db.connect()
+        logger.debug("Database connection established")
         yield db
     finally:
-        db.close() 
+        db.close()
+        logger.debug("Database connection closed") 
