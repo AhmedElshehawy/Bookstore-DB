@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from models import Book, BookResponse
+from core.dependencies import get_db
 from services import DatabaseHandler
 import logging
 import psycopg2
@@ -7,17 +8,6 @@ import psycopg2
 logger = logging.getLogger(__name__)
 
 upsert_router = APIRouter()
-
-async def get_db():
-    """
-    Get a database connection
-    """
-    db = DatabaseHandler()
-    try:
-        db.connect()
-        yield db
-    finally:
-        db.close()
 
 @upsert_router.post("/upsert", response_model=BookResponse)
 async def upsert_book(book: Book, db: DatabaseHandler = Depends(get_db)):
