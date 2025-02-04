@@ -52,7 +52,7 @@ class DatabaseHandler:
             self.cur.execute("""
                 SELECT title, price, rating, description, category, 
                        upc, num_available_units, image_url, book_url
-                FROM books WHERE upc = %s
+                FROM {settings.TABLE_NAME} WHERE upc = %s
             """, (upc,))
             result = self.cur.fetchone()
             return dict(result) if result else None
@@ -69,7 +69,7 @@ class DatabaseHandler:
         """
         try:
             self.cur.execute("""
-                INSERT INTO books (
+                INSERT INTO {settings.TABLE_NAME} (
                     title, price, rating, description, category,
                     upc, num_available_units, image_url, book_url,
                     created_at, updated_at
@@ -96,7 +96,7 @@ class DatabaseHandler:
         """
         try:
             self.cur.execute("""
-                UPDATE books SET
+                UPDATE {settings.TABLE_NAME} SET
                     title = %s,
                     price = %s,
                     rating = %s,
