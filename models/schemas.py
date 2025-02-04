@@ -3,6 +3,9 @@ from typing import Optional
 from .book_model import Book
 
 
+class QueryRequest(BaseModel):
+    query: str
+
 class BookResponse(Book):
     """
     Book model for responses, including success message
