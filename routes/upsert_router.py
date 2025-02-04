@@ -2,10 +2,11 @@ from fastapi import APIRouter, HTTPException, Depends
 from models import Book, BookResponse
 from core.dependencies import get_db
 from services import DatabaseHandler
+from core.logger import setup_logger
 import logging
 import psycopg2
 
-logger = logging.getLogger(__name__)
+logger = setup_logger("upsert_router")
 
 upsert_router = APIRouter()
 

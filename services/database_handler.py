@@ -5,6 +5,10 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from models import Book
 from core.config import settings
+from core.logger import setup_logger
+
+# At the top of the class
+logger = setup_logger("database")
 
 class DatabaseHandler:
     """
@@ -28,7 +32,9 @@ class DatabaseHandler:
         try:
             self.conn = psycopg2.connect(**self.db_params)
             self.cur = self.conn.cursor(cursor_factory=DictCursor)
+            logger.info("Successfully connected to database")
         except psycopg2.Error as e:
+            logger.error(f"Failed to connect to database: {str(e)}")
             raise Exception(f"Failed to connect to database: {str(e)}")
 
     def close(self):
@@ -58,6 +64,7 @@ class DatabaseHandler:
             return dict(result) if result else None
         except psycopg2.Error as e:
             self.conn.rollback()
+            logger.error(f"Database error while checking book existence: {str(e)}")
             raise Exception(f"Database error while checking book existence: {str(e)}")
 
     def insert_book(self, book: Dict):
@@ -85,6 +92,7 @@ class DatabaseHandler:
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
+            logger.error(f"Failed to insert book: {str(e)}")
             raise Exception(f"Failed to insert book: {str(e)}")
 
     def update_book(self, book: Dict):
@@ -115,6 +123,7 @@ class DatabaseHandler:
             self.conn.commit()
         except psycopg2.Error as e:
             self.conn.rollback()
+            logger.error(f"Failed to update book: {str(e)}")
             raise Exception(f"Failed to update book: {str(e)}")
 
     def books_are_different(self, existing_book: Dict, new_book: Dict) -> bool:
@@ -165,6 +174,7 @@ class DatabaseHandler:
             # If book exists and is identical, do nothing (skip)
             
         except Exception as e:
+            logger.error(f"Failed to process book {book['upc']}: {str(e)}")
             raise Exception(f"Failed to process book {book['upc']}: {str(e)}")
         
     def query_books(self, query: str, params: Optional[tuple] = None) -> List[Dict]:
@@ -196,4 +206,5 @@ class DatabaseHandler:
             return [dict(row) for row in results]
         except psycopg2.Error as e:
             self.conn.rollback()
+            logger.error(f"Database error while querying books: {str(e)}")
             raise Exception(f"Database error while querying books: {str(e)}")
