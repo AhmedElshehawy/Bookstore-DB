@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from core.dependencies import get_db
+from core import get_db
 from services import DatabaseHandler
 from models import QueryRequest
 
