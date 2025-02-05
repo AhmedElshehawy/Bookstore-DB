@@ -58,17 +58,22 @@ class DatabaseHandler:
             dict: Book data if found, None otherwise
         '''
         try:
+            logger.debug(f"Fetching book with UPC: {upc}")
             self.cur.execute(f"""
                 SELECT title, price, rating, description, category, 
                        upc, num_available_units, image_url, book_url
                 FROM {settings.TABLE_NAME} WHERE upc = %s
             """, (upc,))
             result = self.cur.fetchone()
+            if result:
+                logger.debug(f"Fetched book: {result}")
+            else:
+                logger.debug(f"No book found with UPC: {upc}")
             return dict(result) if result else None
         except psycopg2.Error as e:
             self.conn.rollback()
-            logger.error(f"Database error while checking book existence: {str(e)}")
-            raise Exception(f"Database error while checking book existence: {str(e)}")
+            logger.exception(f"Database error while fetching book with UPC {upc}: {str(e)}")
+            raise Exception(f"Database error while fetching book with UPC {upc}: {str(e)}")
 
     def insert_book(self, book: Dict):
         """
@@ -78,6 +83,7 @@ class DatabaseHandler:
             book: Book object containing the data to insert
         """
         try:
+            logger.debug(f"Inserting book with URL: {book.get('book_url')}")
             self.cur.execute(f"""
                 INSERT INTO {settings.TABLE_NAME} (
                     title, price, rating, description, category,
@@ -93,10 +99,11 @@ class DatabaseHandler:
                 datetime.now(timezone.utc), datetime.now(timezone.utc)
             ))
             self.conn.commit()
+            logger.info(f"Inserted new book with URL: {book.get('book_url')}")
         except psycopg2.Error as e:
             self.conn.rollback()
-            logger.error(f"Failed to insert book: {str(e)}")
-            raise Exception(f"Failed to insert book: {str(e)}")
+            logger.exception(f"Failed to insert book with URL {book.get('book_url')}: {str(e)}")
+            raise Exception(f"Failed to insert book with URL {book.get('book_url')}: {str(e)}")
 
     def update_book(self, book: Dict):
         """
@@ -106,6 +113,7 @@ class DatabaseHandler:
             book: Book object containing the updated data
         """
         try:
+            logger.debug(f"Updating book with URL: {book.get('book_url')}")
             self.cur.execute(f"""
                 UPDATE {settings.TABLE_NAME} SET
                     title = %s,
@@ -124,10 +132,11 @@ class DatabaseHandler:
                 book['book_url'], datetime.now(timezone.utc), book['upc']
             ))
             self.conn.commit()
+            logger.info(f"Updated book with URL: {book.get('book_url')}")
         except psycopg2.Error as e:
             self.conn.rollback()
-            logger.error(f"Failed to update book: {str(e)}")
-            raise Exception(f"Failed to update book: {str(e)}")
+            logger.exception(f"Failed to update book with URL {book.get('book_url')}: {str(e)}")
+            raise Exception(f"Failed to update book with URL {book.get('book_url')}: {str(e)}")
 
     def books_are_different(self, existing_book: Dict, new_book: Dict) -> bool:
         """
@@ -201,13 +210,16 @@ class DatabaseHandler:
         
         # Check if query starts with SELECT
         if not normalized_query.startswith('SELECT'):
+            logger.error("Attempted non-SELECT query execution blocked.")
             raise ValueError("Only SELECT queries are allowed for security reasons")
             
         try:
+            logger.debug(f"Executing query: {query} with parameters: {params}")
             self.cur.execute(query, params)
             results = self.cur.fetchall()
+            logger.debug(f"Query returned {len(results)} records")
             return [dict(row) for row in results]
         except psycopg2.Error as e:
             self.conn.rollback()
-            logger.error(f"Database error while querying books: {str(e)}")
+            logger.exception(f"Database error while querying books: {str(e)}")
             raise Exception(f"Database error while querying books: {str(e)}")
