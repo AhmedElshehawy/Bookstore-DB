@@ -12,3 +12,5 @@ packages
 *.pyd
 *.pyo
 *.pyc
+test_suite_analysis
+managed_context
