@@ -149,17 +149,14 @@ class DatabaseHandler:
         Returns:
             bool: True if books have different values, False if they're identical
         """
-        return any([
-            existing_book['title'] != new_book['title'],
-            Decimal(str(existing_book['price'])) != new_book['price'],
-            existing_book['rating'] != new_book['rating'],
-            existing_book['description'] != new_book['description'],
-            existing_book['category'] != new_book['category'],
-            existing_book['num_available_units'] != new_book['num_available_units'],
-            existing_book['image_url'] != new_book['image_url'],
-            existing_book['book_url'] != new_book['book_url']
-        ])
-
+        difference_found = False
+        for key in existing_book.keys():
+            if existing_book[key] != new_book[key]:
+                logger.info(f"{key}: {existing_book[key]} -> {new_book[key]}")
+                difference_found = True
+        
+        return difference_found
+        
     def process_book(self, book: Book):
         """
         Main method to process a book - handles the logic for inserting new books
@@ -177,13 +174,21 @@ class DatabaseHandler:
         try:
             existing_book = self.get_book(book['upc'])
             
+            existing_book['price'] = float(existing_book['price'])
+            existing_book['rating'] = int(existing_book['rating'])
+            existing_book['num_available_units'] = int(existing_book['num_available_units'])
+            existing_book['image_url'] = str(existing_book['image_url'])
+            existing_book['book_url'] = str(existing_book['book_url'])
+            
             if not existing_book:
                 # Book doesn't exist, insert it
                 self.insert_book(book)
             elif self.books_are_different(existing_book, book):
                 # Book exists but has different values, update it
                 self.update_book(book)
-            # If book exists and is identical, do nothing (skip)
+            else:
+                # Book exists and is identical, do nothing (skip)
+                logger.info(f"Book {book['upc']} is identical to existing book, skipping update")
             
         except Exception as e:
             logger.error(f"Failed to process book {book['upc']}: {str(e)}")
