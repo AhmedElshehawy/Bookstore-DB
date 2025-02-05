@@ -1,8 +1,9 @@
+import json
 import psycopg2
 from psycopg2.extras import DictCursor
 from decimal import Decimal
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from models import Book
 from core.config import settings
 from core.logger import setup_logger
@@ -57,7 +58,7 @@ class DatabaseHandler:
             dict: Book data if found, None otherwise
         '''
         try:
-            self.cur.execute("""
+            self.cur.execute(f"""
                 SELECT title, price, rating, description, category, 
                        upc, num_available_units, image_url, book_url
                 FROM {settings.TABLE_NAME} WHERE upc = %s
@@ -77,7 +78,7 @@ class DatabaseHandler:
             book: Book object containing the data to insert
         """
         try:
-            self.cur.execute("""
+            self.cur.execute(f"""
                 INSERT INTO {settings.TABLE_NAME} (
                     title, price, rating, description, category,
                     upc, num_available_units, image_url, book_url,
@@ -89,7 +90,7 @@ class DatabaseHandler:
                 book['title'], book['price'], book['rating'], book['description'],
                 book['category'], book['upc'], book['num_available_units'],
                 book['image_url'], book['book_url'],
-                datetime.now(datetime.UTC), datetime.now(datetime.UTC)
+                datetime.now(timezone.utc), datetime.now(timezone.utc)
             ))
             self.conn.commit()
         except psycopg2.Error as e:
@@ -105,7 +106,7 @@ class DatabaseHandler:
             book: Book object containing the updated data
         """
         try:
-            self.cur.execute("""
+            self.cur.execute(f"""
                 UPDATE {settings.TABLE_NAME} SET
                     title = %s,
                     price = %s,
@@ -120,7 +121,7 @@ class DatabaseHandler:
             """, (
                 book['title'], book['price'], book['rating'], book['description'],
                 book['category'], book['num_available_units'], book['image_url'],
-                book['book_url'], datetime.now(datetime.UTC), book['upc']
+                book['book_url'], datetime.now(timezone.utc), book['upc']
             ))
             self.conn.commit()
         except psycopg2.Error as e:
@@ -158,14 +159,14 @@ class DatabaseHandler:
         Args:
             book: Book object to process
         """
-        book = book.model_dump()
+        book = json.loads(book.model_dump_json())
         book['price'] = float(book['price'])
         book['rating'] = int(book['rating'])
         book['num_available_units'] = int(book['num_available_units'])
         book['image_url'] = str(book['image_url'])
         book['book_url'] = str(book['book_url'])
         try:
-            existing_book = self.get_book(book.upc)
+            existing_book = self.get_book(book['upc'])
             
             if not existing_book:
                 # Book doesn't exist, insert it
