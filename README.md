@@ -24,7 +24,7 @@ Bookstore-DB is one of four core repositories that power the Bookstore Chatbot e
 
 This repository is part of a larger, multi-repo project:
 
-- **[Bookstore Assistant](https://github.com/AhmedElshehawy/Bookstore-Assistant)**  
+- **[Bookstore Assistant](https://github.com/AhmedElshehawy/Bookstore_Assistant)**  
   Manages the chat interface, processes natural language queries, and interacts with the other parts of the system.
 
 - **[Bookstore DB](https://github.com/AhmedElshehawy/Bookstore-DB)**  
